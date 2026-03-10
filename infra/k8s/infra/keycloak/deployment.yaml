@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.5.4
+          args: ["start-dev", "--import-realm"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://postgres.infra.svc.cluster.local:5432/keycloak
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+          envFrom:
+            - secretRef:
+                name: keycloak-secret
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import/realm-export.json
+              subPath: realm-export.json
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 10
+      volumes:
+        - name: realm
+          configMap:
+            name: keycloak-realm

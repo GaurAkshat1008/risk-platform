@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identity-access-config
+  namespace: risk-platform
+data:
+  SERVICE_NAME: "identity-access"
+  SERVICE_ENV: "production"
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50051"
+  METRICS_ADDR: ":9090"
+  KEYCLOAK_REALM: "risk-platform-dev"
+  KEYCLOAK_AUDIENCE: "api-gateway-client"
+  OTEL_SERVICE_NAME: "identity-access"
+  OTEL_ENVIRONMENT: "production"
+  KAFKA_AUTH_EVENTS_TOPIC: "auth.events"
+  KEYCLOAK_BASE_URL: "http://keycloak.infra.svc.cluster.local:8080"
+  KEYCLOAK_ISSUER:   "http://keycloak.infra.svc.cluster.local:8080/realms/risk-platform-dev"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  KAFKA_BROKERS: "kafka.infra.svc.cluster.local:9092"

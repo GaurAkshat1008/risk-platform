@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-access
+  namespace: risk-platform
+  labels:
+    app: identity-access
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: identity-access
+  template:
+    metadata:
+      labels:
+        app: identity-access
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: identity-access
+          image: identity-access:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50051
+            - name: metrics
+              containerPort: 9090
+          envFrom:
+            - configMapRef:
+                name: identity-access-config
+            - secretRef:
+                name: identity-access-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 15
+            periodSeconds: 20
