@@ -32,7 +32,7 @@ type RedisConfig struct {
 
 type KafkaConfig struct {
 	Brokers string
-	TennantTopic string
+	TenantTopic string
 }
 
 type OTelConfig struct {
@@ -96,7 +96,7 @@ func Load() (*Config,error) {
 		},
 		Kafka: KafkaConfig{
 			Brokers: getEnv("KAFKA_BROKERS", "localhost:9092"),
-			TennantTopic: getEnv("KAFKA_TENANT_TOPIC", "tenant-events"),
+			TenantTopic: getEnv("KAFKA_TENANT_TOPIC", "tenant-events"),
 		},
 		OTel: OTelConfig{
 			CollectorEndpoint: getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
@@ -110,6 +110,6 @@ func Load() (*Config,error) {
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("GRPCAddr: %s, MetricsAddr: %s, LogLevel: %s, Service: {Name: %s, Env: %s}, Postgres: {DSN: %s}, Redis: {Addr: %s}, Kafka: {Brokers: %s, TennantTopic: %s}, OTel: {CollectorEndpoint: %s}",
-		c.GRPCAddr, c.MetricsAddr, c.LogLevel, c.Service.Name, c.Service.Env, c.Postgres.DSN, c.Redis.Addr, c.Kafka.Brokers, c.Kafka.TennantTopic, c.OTel.CollectorEndpoint)
+	return fmt.Sprintf("GRPCAddr: %s, MetricsAddr: %s, LogLevel: %s, Service: {Name: %s, Env: %s}, Postgres: {DSN: %s}, Redis: {Addr: %s}, Kafka: {Brokers: %s, TenantTopic: %s}, OTel: {CollectorEndpoint: %s}",
+		c.GRPCAddr, c.MetricsAddr, c.LogLevel, c.Service.Name, c.Service.Env, c.Postgres.DSN, c.Redis.Addr, c.Kafka.Brokers, c.Kafka.TenantTopic, c.OTel.CollectorEndpoint)
 }
