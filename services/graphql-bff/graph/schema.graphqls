@@ -1,0 +1,613 @@
+scalar Time
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MERCHANT MODULE — payments, decisions, explanations
+# ══════════════════════════════════════════════════════════════════════════════
+
+type PaymentEvent {
+  id: ID!
+  idempotencyKey: String!
+  tenantId: ID!
+  amount: Int!
+  currency: String!
+  source: String!
+  destination: String!
+  status: PaymentStatus!
+  receivedAt: Time!
+}
+
+enum PaymentStatus {
+  RECEIVED
+  DUPLICATE
+  REJECTED
+}
+
+type IngestionResult {
+  eventId: ID!
+  status: PaymentStatus!
+  reason: String!
+}
+
+type Decision {
+  id: ID!
+  paymentEventId: ID!
+  tenantId: ID!
+  outcome: Outcome!
+  reasonCodes: [String!]!
+  confidenceScore: Float!
+  overridden: Boolean!
+  latencyMs: Int!
+  createdAt: Time!
+}
+
+type DecisionOverride {
+  id: ID!
+  decisionId: ID!
+  analystId: ID!
+  previousOutcome: Outcome!
+  newOutcome: Outcome!
+  reason: String!
+  createdAt: Time!
+}
+
+type DecisionConnection {
+  decisions: [Decision!]!
+  total: Int!
+}
+
+enum Outcome {
+  APPROVE
+  FLAG
+  REVIEW
+  BLOCK
+}
+
+type Explanation {
+  id: ID!
+  decisionId: ID!
+  tenantId: ID!
+  paymentEventId: ID!
+  outcome: Outcome!
+  confidenceScore: Float!
+  ruleContributions: [RuleContribution!]!
+  featureValues: [FeatureValue!]!
+  narrative: String!
+  policyVersion: String!
+  generatedAt: Time!
+}
+
+type RuleContribution {
+  ruleId: ID!
+  ruleName: String!
+  matched: Boolean!
+  action: String!
+  reason: String!
+}
+
+type FeatureValue {
+  name: String!
+  value: String!
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ANALYST MODULE — cases, case actions
+# ══════════════════════════════════════════════════════════════════════════════
+
+type Case {
+  id: ID!
+  decisionId: ID!
+  tenantId: ID!
+  assigneeId: String!
+  status: CaseStatus!
+  priority: CasePriority!
+  paymentEventId: ID!
+  outcome: String!
+  slaDeadline: Time!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type CaseConnection {
+  cases: [Case!]!
+  nextPageToken: String!
+}
+
+enum CaseStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  ESCALATED
+}
+
+enum CasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# WORKFLOW MODULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+type WorkflowTemplate {
+  id: ID!
+  tenantId: ID!
+  name: String!
+  version: Int!
+  states: [String!]!
+  transitions: [WorkflowTransition!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type WorkflowTransition {
+  fromState: String!
+  toState: String!
+  requiredRole: String!
+  guards: [WorkflowGuard!]!
+}
+
+type WorkflowGuard {
+  type: GuardType!
+  role: String!
+  condition: String!
+}
+
+enum GuardType {
+  ROLE_REQUIRED
+  CONDITION
+}
+
+type TransitionResult {
+  allowed: Boolean!
+  reason: String!
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RULES ENGINE MODULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+type Rule {
+  id: ID!
+  tenantId: ID!
+  name: String!
+  version: Int!
+  action: RuleAction!
+  priority: Int!
+  enabled: Boolean!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type RuleEvalResult {
+  ruleId: ID!
+  ruleName: String!
+  matched: Boolean!
+  action: RuleAction!
+  reason: String!
+}
+
+enum RuleAction {
+  APPROVE
+  FLAG
+  REVIEW
+  BLOCK
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TENANT CONFIG MODULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+type Tenant {
+  id: ID!
+  name: String!
+  status: TenantStatus!
+  createdAt: Time!
+  config: TenantConfig!
+}
+
+type TenantConfig {
+  ruleSetId: String!
+  workflowTemplateId: String!
+  featureFlags: [FeatureFlag!]!
+  version: Int!
+}
+
+type FeatureFlag {
+  key: String!
+  enabled: Boolean!
+  rolloutPercentage: Int!
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  ONBOARDING
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# AUDIT TRAIL MODULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+type AuditEvent {
+  id: ID!
+  tenantId: ID!
+  actorId: ID!
+  action: String!
+  resourceType: String!
+  resourceId: ID!
+  sourceTopic: String!
+  hash: String!
+  previousHash: String!
+  occurredAt: Time!
+}
+
+type AuditConnection {
+  events: [AuditEvent!]!
+  nextPageToken: String!
+}
+
+type ChainVerification {
+  valid: Boolean!
+  eventsChecked: Int!
+  brokenAtId: String!
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NOTIFICATION MODULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+type Notification {
+  id: ID!
+  tenantId: ID!
+  type: String!
+  recipient: String!
+  channel: NotificationChannel!
+  status: NotificationStatus!
+  attempts: Int!
+  createdAt: Time!
+}
+
+type NotificationPreference {
+  tenantId: ID!
+  channel: NotificationChannel!
+  eventType: String!
+  enabled: Boolean!
+  config: String!
+}
+
+type NotificationSendResult {
+  notificationId: ID!
+  status: NotificationStatus!
+}
+
+enum NotificationChannel {
+  EMAIL
+  WEBHOOK
+  SLACK
+}
+
+enum NotificationStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRYING
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# OPS MODULE — logs, traces, SLOs, alerts
+# ══════════════════════════════════════════════════════════════════════════════
+
+type LogEntry {
+  id: ID!
+  service: String!
+  severity: String!
+  message: String!
+  traceId: String!
+  spanId: String!
+  tenantId: String!
+  environment: String!
+  timestamp: Time!
+}
+
+type LogConnection {
+  entries: [LogEntry!]!
+  nextPageToken: String!
+}
+
+type TraceSpan {
+  traceId: String!
+  spanId: String!
+  parentSpanId: String!
+  service: String!
+  operation: String!
+  durationMs: Int!
+  status: String!
+  startTime: Time!
+}
+
+type SLOStatus {
+  service: String!
+  errorRate: Float!
+  p50LatencyMs: Float!
+  p95LatencyMs: Float!
+  p99LatencyMs: Float!
+  availability: Float!
+  window: String!
+}
+
+type Alert {
+  name: String!
+  service: String!
+  severity: String!
+  state: String!
+  summary: String!
+  firedAt: Time!
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# INPUT TYPES
+# ══════════════════════════════════════════════════════════════════════════════
+
+input IngestPaymentInput {
+  idempotencyKey: String!
+  tenantId: ID!
+  amount: Int!
+  currency: String!
+  source: String!
+  destination: String!
+}
+
+input OverrideDecisionInput {
+  decisionId: ID!
+  analystId: ID!
+  newOutcome: Outcome!
+  reason: String!
+}
+
+input CreateCaseInput {
+  decisionId: ID!
+  tenantId: ID!
+  paymentEventId: ID!
+  outcome: String!
+  priority: CasePriority!
+}
+
+input AssignCaseInput {
+  caseId: ID!
+  assigneeId: ID!
+  actorId: ID!
+}
+
+input UpdateCaseStatusInput {
+  caseId: ID!
+  status: CaseStatus!
+  actorId: ID!
+  notes: String!
+}
+
+input EscalateCaseInput {
+  caseId: ID!
+  actorId: ID!
+  reason: String!
+}
+
+input LogQueryInput {
+  service: String
+  severity: String
+  traceId: String
+  tenantId: String
+  messageContains: String
+  fromTime: Time
+  toTime: Time
+  pageSize: Int
+  pageToken: String
+}
+
+input AuditQueryInput {
+  tenantId: ID!
+  actorId: String
+  resourceType: String
+  resourceId: String
+  action: String
+  fromTime: Time
+  toTime: Time
+  pageSize: Int
+  pageToken: String
+}
+
+input CreateWorkflowTemplateInput {
+  tenantId: ID!
+  name: String!
+  states: [String!]!
+  transitions: [TransitionInput!]!
+}
+
+input UpdateWorkflowTemplateInput {
+  templateId: ID!
+  tenantId: ID!
+  states: [String!]!
+  transitions: [TransitionInput!]!
+}
+
+input TransitionInput {
+  fromState: String!
+  toState: String!
+  requiredRole: String!
+}
+
+input EvaluateTransitionInput {
+  templateId: ID!
+  tenantId: ID!
+  fromState: String!
+  toState: String!
+  actorRole: String!
+}
+
+input CreateRuleInput {
+  tenantId: ID!
+  name: String!
+  expression: String!
+  action: RuleAction!
+  priority: Int!
+}
+
+input UpdateRuleInput {
+  ruleId: ID!
+  tenantId: ID!
+  expression: String!
+  action: RuleAction!
+  priority: Int!
+  enabled: Boolean!
+}
+
+input DeleteRuleInput {
+  ruleId: ID!
+  tenantId: ID!
+}
+
+input SimulateRuleInput {
+  tenantId: ID!
+  ruleId: ID!
+  expression: String!
+  action: RuleAction!
+  paymentEventId: String!
+  amount: Int!
+  currency: String!
+  source: String!
+  destination: String!
+}
+
+input CreateTenantInput {
+  name: String!
+  ruleSetId: String!
+  workflowTemplateId: String!
+}
+
+input UpdateTenantRuleConfigInput {
+  tenantId: ID!
+  ruleSetId: String!
+}
+
+input UpdateTenantWorkflowConfigInput {
+  tenantId: ID!
+  workflowTemplateId: String!
+}
+
+input SendNotificationInput {
+  tenantId: ID!
+  type: String!
+  recipient: String!
+  channel: NotificationChannel!
+  payload: String!
+}
+
+input UpdateNotificationPreferencesInput {
+  tenantId: ID!
+  channel: NotificationChannel!
+  eventType: String!
+  enabled: Boolean!
+  config: String!
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ROOT QUERY & MUTATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+type Query {
+  # ── Merchant ──────────────────────────────────────────────────────────────
+  paymentEvent(tenantId: ID!, idempotencyKey: String!): PaymentEvent
+  decision(tenantId: ID!, paymentEventId: ID!): Decision
+  decisions(
+    tenantId: ID!
+    page: Int
+    pageSize: Int
+    outcomeFilter: String
+  ): DecisionConnection!
+  explanation(tenantId: ID!, paymentEventId: ID!): Explanation
+
+  # ── Analyst ───────────────────────────────────────────────────────────────
+  case(caseId: ID!): Case
+  cases(
+    tenantId: ID!
+    status: CaseStatus
+    assigneeId: ID
+    pageSize: Int
+    pageToken: String
+  ): CaseConnection!
+
+  # ── Rules & Workflow & Tenant ─────────────────────────────────────────────
+  rules(tenantId: ID!, includeDisabled: Boolean): [Rule!]!
+  workflowTemplate(templateId: ID!, tenantId: ID!): WorkflowTemplate
+  workflowTemplates(tenantId: ID!): [WorkflowTemplate!]!
+  tenantConfig(tenantId: ID!): Tenant
+  featureFlags(tenantId: ID!): [FeatureFlag!]!
+
+  # ── Audit ─────────────────────────────────────────────────────────────────
+  auditTrail(query: AuditQueryInput!): AuditConnection!
+  verifyChainIntegrity(tenantId: ID!, limit: Int): ChainVerification!
+
+  # ── Notifications ─────────────────────────────────────────────────────────
+  notificationStatus(notificationId: ID!, tenantId: ID!): Notification
+
+  # ── Ops ───────────────────────────────────────────────────────────────────
+  queryLogs(query: LogQueryInput!): LogConnection!
+  queryTraces(
+    traceId: String
+    service: String
+    fromTime: Time
+    toTime: Time
+    limit: Int
+  ): [TraceSpan!]!
+  sloStatus(service: String!, window: String!): SLOStatus!
+  alerts(
+    service: String
+    severity: String
+    activeOnly: Boolean
+    limit: Int
+  ): [Alert!]!
+}
+
+type Mutation {
+  # ── Merchant ──────────────────────────────────────────────────────────────
+  ingestPayment(input: IngestPaymentInput!): IngestionResult!
+  overrideDecision(input: OverrideDecisionInput!): String!
+
+  # ── Analyst ───────────────────────────────────────────────────────────────
+  createCase(input: CreateCaseInput!): Case!
+  assignCase(input: AssignCaseInput!): Case!
+  updateCaseStatus(input: UpdateCaseStatusInput!): Case!
+  escalateCase(input: EscalateCaseInput!): Case!
+
+  # ── Workflow ──────────────────────────────────────────────────────────────
+  createWorkflowTemplate(input: CreateWorkflowTemplateInput!): WorkflowTemplate!
+  updateWorkflowTemplate(input: UpdateWorkflowTemplateInput!): WorkflowTemplate!
+  evaluateTransition(input: EvaluateTransitionInput!): TransitionResult!
+
+  # ── Rules ─────────────────────────────────────────────────────────────────
+  createRule(input: CreateRuleInput!): Rule!
+  updateRule(input: UpdateRuleInput!): Rule!
+  deleteRule(input: DeleteRuleInput!): Boolean!
+  simulateRule(input: SimulateRuleInput!): RuleEvalResult!
+
+  # ── Tenant ────────────────────────────────────────────────────────────────
+  createTenant(input: CreateTenantInput!): Tenant!
+  updateTenantRuleConfig(input: UpdateTenantRuleConfigInput!): Tenant!
+  updateTenantWorkflowConfig(input: UpdateTenantWorkflowConfigInput!): Tenant!
+
+  # ── Notifications ─────────────────────────────────────────────────────────
+  sendNotification(input: SendNotificationInput!): NotificationSendResult!
+  updateNotificationPreferences(
+    input: UpdateNotificationPreferencesInput!
+  ): NotificationPreference!
+
+  # ── Audit (manual entry from UI) ──────────────────────────────────────────
+  appendAuditEvent(
+    tenantId: ID!
+    actorId: ID!
+    action: String!
+    resourceType: String!
+    resourceId: ID!
+  ): AuditEvent!
+}
