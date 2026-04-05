@@ -18,8 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "baseUrl": "."
+    }
   },
   "include": ["src", "codegen.ts", "vite-env.d.ts"]
 }
