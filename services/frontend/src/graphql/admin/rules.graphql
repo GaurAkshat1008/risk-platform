@@ -1,0 +1,51 @@
+query Rules($tenantId: ID!, $includeDisabled: Boolean) {
+  rules(tenantId: $tenantId, includeDisabled: $includeDisabled) {
+    id
+    tenantId
+    name
+    version
+    action
+    priority
+    enabled
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateRule($input: CreateRuleInput!) {
+  createRule(input: $input) {
+    id
+    name
+    version
+    action
+    priority
+    enabled
+    createdAt
+  }
+}
+
+mutation UpdateRule($input: UpdateRuleInput!) {
+  updateRule(input: $input) {
+    id
+    name
+    version
+    action
+    priority
+    enabled
+    updatedAt
+  }
+}
+
+mutation DeleteRule($input: DeleteRuleInput!) {
+  deleteRule(input: $input)
+}
+
+mutation SimulateRule($input: SimulateRuleInput!) {
+  simulateRule(input: $input) {
+    ruleId
+    ruleName
+    matched
+    action
+    reason
+  }
+}

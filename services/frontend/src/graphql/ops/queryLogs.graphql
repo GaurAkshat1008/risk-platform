@@ -1,0 +1,16 @@
+query QueryLogs($query: LogQueryInput!) {
+  queryLogs(query: $query) {
+    entries {
+      id
+      service
+      severity
+      message
+      traceId
+      spanId
+      tenantId
+      environment
+      timestamp
+    }
+    nextPageToken
+  }
+}

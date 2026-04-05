@@ -1,0 +1,13 @@
+query Decision($tenantId: ID!, $paymentEventId: ID!) {
+  decision(tenantId: $tenantId, paymentEventId: $paymentEventId) {
+    id
+    paymentEventId
+    tenantId
+    outcome
+    reasonCodes
+    confidenceScore
+    overridden
+    latencyMs
+    createdAt
+  }
+}

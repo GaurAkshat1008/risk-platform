@@ -1,0 +1,47 @@
+query AuditTrail($query: AuditQueryInput!) {
+  auditTrail(query: $query) {
+    events {
+      id
+      tenantId
+      actorId
+      action
+      resourceType
+      resourceId
+      sourceTopic
+      hash
+      previousHash
+      occurredAt
+    }
+    nextPageToken
+  }
+}
+
+query VerifyChainIntegrity($tenantId: ID!, $limit: Int) {
+  verifyChainIntegrity(tenantId: $tenantId, limit: $limit) {
+    valid
+    eventsChecked
+    brokenAtId
+  }
+}
+
+mutation AppendAuditEvent(
+  $tenantId: ID!
+  $actorId: ID!
+  $action: String!
+  $resourceType: String!
+  $resourceId: ID!
+) {
+  appendAuditEvent(
+    tenantId: $tenantId
+    actorId: $actorId
+    action: $action
+    resourceType: $resourceType
+    resourceId: $resourceId
+  ) {
+    id
+    action
+    resourceType
+    resourceId
+    occurredAt
+  }
+}

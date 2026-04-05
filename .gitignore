@@ -4,3 +4,5 @@ go.sum
 *.md
 proto
 secret.yaml
+node_modules/
+dist/

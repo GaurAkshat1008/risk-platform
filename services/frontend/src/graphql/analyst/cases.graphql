@@ -1,0 +1,30 @@
+query Cases(
+  $tenantId: ID!
+  $status: CaseStatus
+  $assigneeId: ID
+  $pageSize: Int
+  $pageToken: String
+) {
+  cases(
+    tenantId: $tenantId
+    status: $status
+    assigneeId: $assigneeId
+    pageSize: $pageSize
+    pageToken: $pageToken
+  ) {
+    cases {
+      id
+      decisionId
+      tenantId
+      assigneeId
+      status
+      priority
+      paymentEventId
+      outcome
+      slaDeadline
+      createdAt
+      updatedAt
+    }
+    nextPageToken
+  }
+}

@@ -1,0 +1,24 @@
+query QueryTraces(
+  $traceId: String
+  $service: String
+  $fromTime: Time
+  $toTime: Time
+  $limit: Int
+) {
+  queryTraces(
+    traceId: $traceId
+    service: $service
+    fromTime: $fromTime
+    toTime: $toTime
+    limit: $limit
+  ) {
+    traceId
+    spanId
+    parentSpanId
+    service
+    operation
+    durationMs
+    status
+    startTime
+  }
+}

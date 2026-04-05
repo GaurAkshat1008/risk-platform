@@ -1,0 +1,31 @@
+query NotificationStatus($notificationId: ID!, $tenantId: ID!) {
+  notificationStatus(notificationId: $notificationId, tenantId: $tenantId) {
+    id
+    tenantId
+    type
+    recipient
+    channel
+    status
+    attempts
+    createdAt
+  }
+}
+
+mutation SendNotification($input: SendNotificationInput!) {
+  sendNotification(input: $input) {
+    notificationId
+    status
+  }
+}
+
+mutation UpdateNotificationPreferences(
+  $input: UpdateNotificationPreferencesInput!
+) {
+  updateNotificationPreferences(input: $input) {
+    tenantId
+    channel
+    eventType
+    enabled
+    config
+  }
+}

@@ -1,0 +1,36 @@
+mutation CreateCase($input: CreateCaseInput!) {
+  createCase(input: $input) {
+    id
+    decisionId
+    tenantId
+    status
+    priority
+    createdAt
+  }
+}
+
+mutation AssignCase($input: AssignCaseInput!) {
+  assignCase(input: $input) {
+    id
+    assigneeId
+    status
+    updatedAt
+  }
+}
+
+mutation UpdateCaseStatus($input: UpdateCaseStatusInput!) {
+  updateCaseStatus(input: $input) {
+    id
+    status
+    updatedAt
+  }
+}
+
+mutation EscalateCase($input: EscalateCaseInput!) {
+  escalateCase(input: $input) {
+    id
+    status
+    priority
+    updatedAt
+  }
+}

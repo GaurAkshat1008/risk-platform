@@ -1,0 +1,55 @@
+query TenantConfig($tenantId: ID!) {
+  tenantConfig(tenantId: $tenantId) {
+    id
+    name
+    status
+    createdAt
+    config {
+      ruleSetId
+      workflowTemplateId
+      featureFlags {
+        key
+        enabled
+        rolloutPercentage
+      }
+      version
+    }
+  }
+}
+
+query FeatureFlags($tenantId: ID!) {
+  featureFlags(tenantId: $tenantId) {
+    key
+    enabled
+    rolloutPercentage
+  }
+}
+
+mutation CreateTenant($input: CreateTenantInput!) {
+  createTenant(input: $input) {
+    id
+    name
+    status
+    createdAt
+  }
+}
+
+mutation UpdateTenantRuleConfig($input: UpdateTenantRuleConfigInput!) {
+  updateTenantRuleConfig(input: $input) {
+    id
+    config {
+      ruleSetId
+      version
+    }
+  }
+}
+
+mutation UpdateTenantWorkflowConfig($input: UpdateTenantWorkflowConfigInput!) {
+  updateTenantWorkflowConfig(input: $input) {
+    id
+    config {
+      workflowTemplateId
+      version
+    }
+  }
+}

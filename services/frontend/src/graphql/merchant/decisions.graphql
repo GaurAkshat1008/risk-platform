@@ -1,0 +1,26 @@
+query Decisions(
+  $tenantId: ID!
+  $page: Int
+  $pageSize: Int
+  $outcomeFilter: String
+) {
+  decisions(
+    tenantId: $tenantId
+    page: $page
+    pageSize: $pageSize
+    outcomeFilter: $outcomeFilter
+  ) {
+    decisions {
+      id
+      paymentEventId
+      tenantId
+      outcome
+      reasonCodes
+      confidenceScore
+      overridden
+      latencyMs
+      createdAt
+    }
+    total
+  }
+}

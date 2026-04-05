@@ -1,0 +1,7 @@
+mutation IngestPayment($input: IngestPaymentInput!) {
+  ingestPayment(input: $input) {
+    eventId
+    status
+    reason
+  }
+}

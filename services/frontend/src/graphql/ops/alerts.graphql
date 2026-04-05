@@ -1,0 +1,20 @@
+query Alerts(
+  $service: String
+  $severity: String
+  $activeOnly: Boolean
+  $limit: Int
+) {
+  alerts(
+    service: $service
+    severity: $severity
+    activeOnly: $activeOnly
+    limit: $limit
+  ) {
+    name
+    service
+    severity
+    state
+    summary
+    firedAt
+  }
+}

@@ -1,0 +1,13 @@
+query PaymentEvent($tenantId: ID!, $idempotencyKey: String!) {
+  paymentEvent(tenantId: $tenantId, idempotencyKey: $idempotencyKey) {
+    id
+    idempotencyKey
+    tenantId
+    amount
+    currency
+    source
+    destination
+    status
+    receivedAt
+  }
+}

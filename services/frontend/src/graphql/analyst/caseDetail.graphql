@@ -1,0 +1,15 @@
+query CaseDetail($caseId: ID!) {
+  case(caseId: $caseId) {
+    id
+    decisionId
+    tenantId
+    assigneeId
+    status
+    priority
+    paymentEventId
+    outcome
+    slaDeadline
+    createdAt
+    updatedAt
+  }
+}

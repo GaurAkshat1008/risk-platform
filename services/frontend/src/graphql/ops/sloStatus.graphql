@@ -1,0 +1,11 @@
+query SloStatus($service: String!, $window: String!) {
+  sloStatus(service: $service, window: $window) {
+    service
+    errorRate
+    p50LatencyMs
+    p95LatencyMs
+    p99LatencyMs
+    availability
+    window
+  }
+}

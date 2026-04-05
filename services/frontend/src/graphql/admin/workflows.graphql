@@ -1,0 +1,70 @@
+query WorkflowTemplates($tenantId: ID!) {
+  workflowTemplates(tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    version
+    states
+    transitions {
+      fromState
+      toState
+      requiredRole
+      guards {
+        type
+        role
+        condition
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query WorkflowTemplate($templateId: ID!, $tenantId: ID!) {
+  workflowTemplate(templateId: $templateId, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    version
+    states
+    transitions {
+      fromState
+      toState
+      requiredRole
+      guards {
+        type
+        role
+        condition
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateWorkflowTemplate($input: CreateWorkflowTemplateInput!) {
+  createWorkflowTemplate(input: $input) {
+    id
+    name
+    version
+    states
+    createdAt
+  }
+}
+
+mutation UpdateWorkflowTemplate($input: UpdateWorkflowTemplateInput!) {
+  updateWorkflowTemplate(input: $input) {
+    id
+    name
+    version
+    states
+    updatedAt
+  }
+}
+
+mutation EvaluateTransition($input: EvaluateTransitionInput!) {
+  evaluateTransition(input: $input) {
+    allowed
+    reason
+  }
+}

@@ -1,0 +1,24 @@
+query Explanation($tenantId: ID!, $paymentEventId: ID!) {
+  explanation(tenantId: $tenantId, paymentEventId: $paymentEventId) {
+    id
+    decisionId
+    tenantId
+    paymentEventId
+    outcome
+    confidenceScore
+    ruleContributions {
+      ruleId
+      ruleName
+      matched
+      action
+      reason
+    }
+    featureValues {
+      name
+      value
+    }
+    narrative
+    policyVersion
+    generatedAt
+  }
+}
