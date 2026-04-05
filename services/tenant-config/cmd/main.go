@@ -18,6 +18,7 @@ import (
     grpcserver "tenant-config/internal/grpc"
     "tenant-config/internal/kafka"
     "tenant-config/internal/telemetry"
+    "tenant-config/migrations"
 
     "github.com/joho/godotenv"
     "github.com/prometheus/client_golang/prometheus/promhttp"
@@ -78,6 +79,13 @@ func main() {
     slog.Info("connected to postgres")
 
     store := db.NewTenantStore(pool)
+
+    // Run migrations
+    if err := migrations.Run(initCtx, pool); err != nil {
+        slog.Error("failed to run migrations", "error", err)
+        os.Exit(1)
+    }
+    slog.Info("migrations applied")
 
     // Redis
     tenantCache, err := cache.NewTenantCache(cfg.Redis.Addr)
