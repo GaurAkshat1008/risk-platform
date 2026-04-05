@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: risk-platform
+data:
+  VITE_GRAPHQL_URL: "http://graphql-bff.risk-platform.svc.cluster.local:8090/graphql"
+  VITE_KEYCLOAK_URL: "http://keycloak.infra.svc.cluster.local:8080"
+  VITE_KEYCLOAK_REALM: "risk-platform-dev"
+  VITE_KEYCLOAK_CLIENT_ID: "platform-ui"

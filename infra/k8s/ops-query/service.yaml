@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ops-query
+  namespace: risk-platform
+spec:
+  selector:
+    app: ops-query
+  ports:
+    - name: grpc
+      port: 50063
+      targetPort: 50063
+    - name: metrics
+      port: 9103
+      targetPort: 9103
+  type: ClusterIP

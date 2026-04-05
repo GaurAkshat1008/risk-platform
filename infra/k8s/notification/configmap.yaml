@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-config
+  namespace: risk-platform
+data:
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50061"
+  METRICS_ADDR: ":9101"
+  REDIS_ADDR: "redis.infra.svc.cluster.local:6379"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "notification"
+  OTEL_ENVIRONMENT: "production"
+  KAFKA_BROKERS: "kafka.infra.svc.cluster.local:9092"
+  KAFKA_TOPICS: "case.created,case.escalated,decision.made"
+  KAFKA_CONSUMER_GROUP: "notification-service"

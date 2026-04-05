@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql-bff
+  namespace: risk-platform
+  labels:
+    app: graphql-bff
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: graphql-bff
+  template:
+    metadata:
+      labels:
+        app: graphql-bff
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9104"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: graphql-bff
+          image: graphql-bff:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8090
+            - name: metrics
+              containerPort: 9104
+          envFrom:
+            - configMapRef:
+                name: graphql-bff-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8090
+            initialDelaySeconds: 15
+            periodSeconds: 20

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rules-engine
+  namespace: risk-platform
+  labels:
+    app: rules-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rules-engine
+  template:
+    metadata:
+      labels:
+        app: rules-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9095"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: rules-engine
+          image: rules-engine:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50055
+            - name: metrics
+              containerPort: 9095
+          envFrom:
+            - configMapRef:
+                name: rules-engine-config
+            - secretRef:
+                name: rules-engine-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50055
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50055
+            initialDelaySeconds: 15
+            periodSeconds: 20

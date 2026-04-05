@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-ingestion
+  namespace: risk-platform
+  labels:
+    app: log-ingestion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: log-ingestion
+  template:
+    metadata:
+      labels:
+        app: log-ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9102"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: log-ingestion
+          image: log-ingestion:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50062
+            - name: metrics
+              containerPort: 9102
+          envFrom:
+            - configMapRef:
+                name: log-ingestion-config
+            - secretRef:
+                name: log-ingestion-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50062
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50062
+            initialDelaySeconds: 15
+            periodSeconds: 20

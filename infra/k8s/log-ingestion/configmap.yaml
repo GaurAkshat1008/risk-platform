@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-ingestion-config
+  namespace: risk-platform
+data:
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50062"
+  METRICS_ADDR: ":9102"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "log-ingestion"
+  OTEL_ENVIRONMENT: "production"
+  KAFKA_BROKERS: "kafka.infra.svc.cluster.local:9092"
+  KAFKA_LOGS_TOPIC: "ops.logs"
+  KAFKA_CONSUMER_GROUP: "log-ingestion-service"

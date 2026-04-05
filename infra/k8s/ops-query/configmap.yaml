@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ops-query-config
+  namespace: risk-platform
+data:
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50063"
+  METRICS_ADDR: ":9103"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "ops-query"
+  OTEL_ENVIRONMENT: "production"
+  LOG_INGESTION_ADDR: "log-ingestion.risk-platform.svc.cluster.local:50062"
+  PROMETHEUS_ADDR: "http://otel-collector.infra.svc.cluster.local:8889"
+  JAEGER_ADDR: "http://jaeger.infra.svc.cluster.local:16686"

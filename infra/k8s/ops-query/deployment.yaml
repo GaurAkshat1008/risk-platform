@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ops-query
+  namespace: risk-platform
+  labels:
+    app: ops-query
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ops-query
+  template:
+    metadata:
+      labels:
+        app: ops-query
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9103"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: ops-query
+          image: ops-query:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50063
+            - name: metrics
+              containerPort: 9103
+          envFrom:
+            - configMapRef:
+                name: ops-query-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50063
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50063
+            initialDelaySeconds: 15
+            periodSeconds: 20

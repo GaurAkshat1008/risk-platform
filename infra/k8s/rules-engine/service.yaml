@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rules-engine
+  namespace: risk-platform
+spec:
+  selector:
+    app: rules-engine
+  ports:
+    - name: grpc
+      port: 50055
+      targetPort: 50055
+    - name: metrics
+      port: 9095
+      targetPort: 9095
+  type: ClusterIP

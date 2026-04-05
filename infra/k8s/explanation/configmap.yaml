@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: explanation-config
+  namespace: risk-platform
+data:
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50060"
+  METRICS_ADDR: ":9100"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "explanation"
+  OTEL_ENVIRONMENT: "production"
+  DECISION_SERVICE_ADDR: "decision.risk-platform.svc.cluster.local:50056"
+  RULES_ENGINE_ADDR: "rules-engine.risk-platform.svc.cluster.local:50055"

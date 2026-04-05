@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow
+  namespace: risk-platform
+  labels:
+    app: workflow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: workflow
+  template:
+    metadata:
+      labels:
+        app: workflow
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9098"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: workflow
+          image: workflow:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50058
+            - name: metrics
+              containerPort: 9098
+          envFrom:
+            - configMapRef:
+                name: workflow-config
+            - secretRef:
+                name: workflow-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50058
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50058
+            initialDelaySeconds: 15
+            periodSeconds: 20

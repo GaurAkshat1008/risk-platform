@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingestion-config
+  namespace: risk-platform
+data:
+  SERVICE_NAME: "ingestion"
+  SERVICE_ENV: "production"
+  LOG_LEVEL: "info"
+  GRPC_ADDR: ":50053"
+  METRICS_ADDR: ":9093"
+  REDIS_ADDR: "redis.infra.svc.cluster.local:6379"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.infra.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "ingestion"
+  OTEL_ENVIRONMENT: "production"
+  KAFKA_BROKERS: "kafka.infra.svc.cluster.local:9092"
+  KAFKA_PAYMENTS_TOPIC: "payments.received"

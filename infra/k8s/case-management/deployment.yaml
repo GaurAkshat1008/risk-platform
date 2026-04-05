@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: case-management
+  namespace: risk-platform
+  labels:
+    app: case-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: case-management
+  template:
+    metadata:
+      labels:
+        app: case-management
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9097"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: case-management
+          image: case-management:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50057
+            - name: metrics
+              containerPort: 9097
+          envFrom:
+            - configMapRef:
+                name: case-management-config
+            - secretRef:
+                name: case-management-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50057
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            grpc:
+              port: 50057
+            initialDelaySeconds: 15
+            periodSeconds: 20
