@@ -70,7 +70,12 @@ func main() {
 	}
 
 	// ── Redis cache ───────────────────────────────────────────────────────────
-	queryCache := cache.NewQueryCache(cfg.Redis.Addr)
+	queryCache, err := cache.NewQueryCache(cfg.Redis.Addr)
+	if err != nil {
+		logger.Error("failed to connect to redis", "error", err)
+		os.Exit(1)
+	}
+	defer queryCache.Close()
 
 	// ── gRPC client registry ──────────────────────────────────────────────────
 	registry, err := client.NewRegistry(client.Addrs{
