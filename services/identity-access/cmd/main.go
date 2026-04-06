@@ -41,13 +41,18 @@ func main() {
 	})))
 	slog.SetDefault(logger)
 
+	// Short context for telemetry init only
 	initCx, initCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer initCancel()
 
+	// Longer background context for Keycloak (may be slow to start)
+	keycloakCx, keycloakCancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer keycloakCancel()
+
 	tp, err := telemetry.NewTracerProvider(initCx, telemetry.TracerConfig{
-		ServiceName: cfg.Service.Name,
-		ServiceVersion: "0.1.0",
-		Environment: cfg.Service.Env,
+		ServiceName:       cfg.Service.Name,
+		ServiceVersion:    "0.1.0",
+		Environment:       cfg.Service.Env,
 		CollectorEndpoint: cfg.OTel.CollectorEndpoint,
 	})
 
@@ -69,22 +74,33 @@ func main() {
 	}
 	slog.Info("metrics initialized")
 
-	validator, err := auth.NewValidator(initCx, cfg.Keycloak.Issuer, cfg.Keycloak.Audience)
-	if err != nil {
-		slog.Error("Failed to create validator", "error", err)
-		os.Exit(1)
+	// Retry OIDC discovery until Keycloak is ready (up to 2 min)
+	var validator *auth.Validator
+	for attempt := 1; ; attempt++ {
+		attemptCx, attemptCancel := context.WithTimeout(keycloakCx, 15*time.Second)
+		validator, err = auth.NewValidator(attemptCx, cfg.Keycloak.Issuer, cfg.Keycloak.Audience)
+		attemptCancel()
+		if err == nil {
+			break
+		}
+		slog.Warn("Keycloak not ready, retrying OIDC discovery", "attempt", attempt, "error", err)
+		if keycloakCx.Err() != nil {
+			slog.Error("Keycloak did not become ready in time", "error", err)
+			os.Exit(1)
+		}
+		time.Sleep(5 * time.Second)
 	}
 
 	rbac := rbac.NewEvaluator()
 
 	keycloakClient := keycloak.NewClient(keycloak.Config{
-		BaseURL: cfg.Keycloak.BaseURL,
-		Realm: cfg.Keycloak.Realm,
-		ClientID: cfg.Keycloak.ClientID,
+		BaseURL:      cfg.Keycloak.BaseURL,
+		Realm:        cfg.Keycloak.Realm,
+		ClientID:     cfg.Keycloak.ClientID,
 		ClientSecret: cfg.Keycloak.ClientSecret,
 	}, logger)
 
-	if err := keycloakClient.Ping(initCx); err != nil {
+	if err := keycloakClient.Ping(keycloakCx); err != nil {
 		slog.Error("Failed to connect to Keycloak", "error", err)
 		os.Exit(1)
 	}
@@ -92,7 +108,7 @@ func main() {
 
 	kafkaProducer := kafka.NewProducer(kafka.Config{
 		Brokers: strings.Split(cfg.Kafka.Brokers, ","),
-		Topic: cfg.Kafka.AuthEventsTopic,
+		Topic:   cfg.Kafka.AuthEventsTopic,
 	}, logger)
 
 	authPublisher := kafka.NewAuthEventPublisher(kafkaProducer)
@@ -103,17 +119,16 @@ func main() {
 		grpc.UnaryInterceptor(telemetry.UnaryServerInterceptor(metrics)),
 	)
 
-	identitySvc := grpcserver.NewIdentityServiceServer(validator, 
-		rbac, 
-		keycloakClient, 
-		authPublisher, 
-		metrics,)
+	identitySvc := grpcserver.NewIdentityServiceServer(validator,
+		rbac,
+		keycloakClient,
+		authPublisher,
+		metrics)
 	identitypb.RegisterIdentityAccessServiceServer(srv, identitySvc)
 
 	healthSvc := health.NewServer()
-    healthSvc.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
-    healthpb.RegisterHealthServer(srv, healthSvc)
-
+	healthSvc.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+	healthpb.RegisterHealthServer(srv, healthSvc)
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
@@ -142,7 +157,7 @@ func main() {
 	<-quit
 	slog.Info("Shutting down Identity Access Service")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	
+
 	defer cancel()
 
 	srv.GracefulStop()

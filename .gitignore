@@ -6,3 +6,4 @@ proto
 secret.yaml
 node_modules/
 dist/
+.logs/
