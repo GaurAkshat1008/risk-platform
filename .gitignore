@@ -1,7 +1,7 @@
 .env
 go.mod
 go.sum
-*.md
+*.ignore.md
 proto
 secret.yaml
 node_modules/
